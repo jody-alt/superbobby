@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#E63B2E"><link rel="icon" href="bobby-hero.svg" type="image/svg+xml"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<meta charset="utf-8">
+<title>Super Bobby</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Bangers&display=swap">
+<style>
+/* Layout: one-screen comic-book app. Sticky hero bar on top, one big panel below that swaps between screens.
+   Single bright look on purpose (a 6-year-old's superhero comic), so colours are set explicitly in both host themes. */
+:root{
+  --paper:#FFF6E3; --ink:#1B1F3B; --red:#E63B2E; --blue:#2E7CF6; --yellow:#FFC83D; --green:#22A55F;
+  --purple:#7B4DFF; --sky:#BFE6FF; --soft:#FFE9B8; --grey:#6B6F86; --white:#FFFFFF;
+  --display:"Bangers","Comic Sans MS","Chalkboard SE",system-ui,sans-serif;
+  --read:"Andika","Century Gothic","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--read);font-size:20px;overscroll-behavior:none;
+  background-image:radial-gradient(rgba(230,59,46,.10) 1.6px,transparent 1.7px);background-size:18px 18px;
+  -webkit-user-select:none;user-select:none}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--red)}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+button:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
+h1,h2,h3,.disp{font-family:var(--display);letter-spacing:.04em;font-weight:400;margin:0;text-wrap:balance}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--red);color:var(--white);border-bottom:5px solid var(--ink)}
+.bar .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;padding-block:8px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar h1{font-size:34px;flex:1;text-shadow:3px 3px 0 var(--ink);line-height:1}
+.bar h1 small{display:block;font-size:17px;letter-spacing:.06em;opacity:.95;text-shadow:none;font-family:var(--read);font-weight:700}
+.starpill{display:flex;align-items:center;gap:6px;background:var(--yellow);color:var(--ink);border:3px solid var(--ink);border-radius:999px;padding:4px 14px 4px 8px;font-family:var(--display);font-size:28px;box-shadow:3px 3px 0 var(--ink)}
+.homebtn{background:var(--white);color:var(--ink);border:3px solid var(--ink);border-radius:14px;padding:6px 14px;font-family:var(--display);font-size:24px;box-shadow:3px 3px 0 var(--ink);min-height:48px}
+.avatar{width:62px;height:62px;flex:none}
+
+/* comic panels */
+.panel{background:var(--white);border:4px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink);padding:20px}
+.grid{display:grid;gap:18px}
+.missions{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.mission{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;border:4px solid var(--ink);border-radius:22px;padding:18px;box-shadow:6px 6px 0 var(--ink);min-height:190px;transition:transform .12s}
+.mission:active{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--ink)}
+.mission .ic{font-size:56px;line-height:1}
+.mission h3{font-size:34px;line-height:1}
+.mission p{margin:0;font-size:18px;font-weight:700}
+.mission .tick{position:absolute;top:-14px;right:-14px;width:58px;height:58px;border-radius:50%;background:var(--green);border:4px solid var(--ink);display:grid;place-items:center;color:var(--white);font-size:34px;transform:scale(0) rotate(-30deg);transition:transform .35s cubic-bezier(.3,1.8,.5,1)}
+.mission.done .tick{transform:scale(1) rotate(0)}
+.m-morning{background:#FFE07A}.m-story{background:#9FD3FF}.m-spell{background:#B8F0C8}.m-hand{background:#FFB8B0}
+.hero{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.hero .big{width:170px;height:170px;flex:none}
+.hero .txt{flex:1;min-width:240px}
+.hero h2{font-size:48px;color:var(--red);text-shadow:3px 3px 0 var(--ink);-webkit-text-stroke:1px var(--ink);line-height:1}
+.hero p{margin:.3em 0 0;font-size:22px;font-weight:700}
+.daybadge{display:inline-block;background:var(--blue);color:var(--white);font-family:var(--display);font-size:26px;padding:4px 14px;border-radius:12px;border:3px solid var(--ink);margin-top:10px}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.btn{font-family:var(--display);font-size:30px;letter-spacing:.05em;padding:12px 26px;min-height:64px;border:4px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 var(--ink);background:var(--yellow);transition:transform .1s}
+.btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.btn.red{background:var(--red);color:var(--white)}.btn.blue{background:var(--blue);color:var(--white)}.btn.green{background:var(--green);color:var(--white)}.btn.white{background:var(--white)}
+.btn.small{font-size:22px;min-height:50px;padding:8px 16px}
+.btn[disabled]{opacity:.45}
+.title{font-size:44px;color:var(--ink);margin-bottom:12px}
+.sub{font-size:20px;font-weight:700;color:var(--grey);margin:0 0 14px}
+.linkbtn{font-size:16px;font-weight:700;color:var(--grey);text-decoration:underline;padding:10px}
+
+/* morning */
+.qcard{display:grid;gap:14px;text-align:center}
+.qcard h2{font-size:42px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.choice button{border:4px solid var(--ink);border-radius:22px;box-shadow:5px 5px 0 var(--ink);padding:18px 10px;font-family:var(--display);font-size:30px;display:grid;gap:6px;justify-items:center;min-height:170px}
+.choice button span{font-size:64px;line-height:1}
+.yes{background:#B8F0C8}.notyet{background:#E8E6F5}
+
+/* story */
+.shelf{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.ep{border:4px solid var(--ink);border-radius:16px;padding:12px;background:var(--white);box-shadow:4px 4px 0 var(--ink);text-align:left;min-height:120px;display:flex;flex-direction:column;gap:4px}
+.ep b{font-family:var(--display);font-size:22px;letter-spacing:.04em;color:var(--blue)}
+.ep span{font-weight:700;font-size:17px;line-height:1.2}
+.ep.read{background:#E4F8EA}.ep.locked{opacity:.4}.ep.next{background:var(--yellow)}
+.reader{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.reader{grid-template-columns:1fr}.reader .scene{aspect-ratio:16/9}}
+.scene{border:4px solid var(--ink);border-radius:20px;overflow:hidden;background:var(--sky);aspect-ratio:4/3;max-width:100%;position:relative}
+.scene svg{display:block;width:100%;height:100%}
+.page{display:flex;flex-direction:column;gap:16px;justify-content:space-between}
+.ptext{font-size:36px;line-height:1.75;font-weight:400;word-spacing:.18em;margin:0}
+.ptext .w{display:inline-block;padding:0 3px;border-radius:8px;cursor:pointer}
+.ptext .w.hl{background:var(--yellow)}
+.ptext .w.key{text-decoration:underline 4px var(--green);text-underline-offset:6px}
+.pnum{font-family:var(--display);font-size:24px;color:var(--grey)}
+.dots{display:flex;gap:8px}
+.dots i{width:18px;height:18px;border-radius:50%;border:3px solid var(--ink);background:var(--white)}
+.dots i.on{background:var(--blue)}
+.quiz{display:grid;gap:12px}
+.quiz button{border:4px solid var(--ink);border-radius:16px;padding:16px;font-size:26px;font-weight:700;background:var(--white);box-shadow:4px 4px 0 var(--ink);text-align:left;min-height:64px}
+.quiz button.right{background:#B8F0C8}.quiz button.wrong{background:#FFD1CC}
+
+/* spelling */
+.slots{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;min-height:96px}
+.slot{width:76px;height:90px;border-bottom:6px solid var(--ink);display:grid;place-items:center;font-size:58px;font-weight:700}
+.slot.ok{color:var(--green)}.slot.bad{color:var(--red)}
+.tiles{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.tile{width:80px;height:80px;border:4px solid var(--ink);border-radius:16px;background:var(--yellow);font-size:50px;font-weight:700;box-shadow:4px 4px 0 var(--ink)}
+.tile[disabled]{opacity:.2}
+.bigword{font-size:96px;font-weight:700;text-align:center;letter-spacing:.06em;margin:6px 0}
+
+/* hero hands */
+.steps{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.step{border:4px solid var(--ink);border-radius:18px;padding:14px;background:var(--white);box-shadow:4px 4px 0 var(--ink);text-align:left;display:flex;flex-direction:column;gap:6px;min-height:150px;position:relative}
+.step .ic{font-size:44px;line-height:1}
+.step b{font-family:var(--display);font-size:26px;letter-spacing:.04em}
+.step span{font-size:16px;font-weight:700;color:var(--grey)}
+.step.done{background:#E4F8EA}
+.step.done::after{content:"✓";position:absolute;top:8px;right:12px;font-size:34px;color:var(--green);font-weight:700}
+.tracewrap{position:relative;width:min(100%,460px);aspect-ratio:120/130;margin:0 auto;border:4px solid var(--ink);border-radius:20px;background:var(--white);touch-action:none;overflow:hidden}
+.tracewrap svg,.tracewrap canvas{position:absolute;inset:0;width:100%;height:100%}
+.tracewrap canvas{touch-action:none}
+.fam{display:inline-block;font-family:var(--display);font-size:24px;padding:4px 14px;border-radius:12px;border:3px solid var(--ink);background:var(--soft)}
+.tstars{font-size:46px;text-align:center;min-height:56px}
+.gym{text-align:center;display:grid;gap:12px;justify-items:center}
+.gym .ic{font-size:110px;line-height:1}
+.gym h2{font-size:44px}
+.timer{font-family:var(--display);font-size:60px;color:var(--red)}
+.space-line{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;row-gap:18px;font-size:52px;font-weight:700}
+.space-line .ch{padding:0 1px}
+.space-line .gap{width:18px;height:64px;border-radius:8px;align-self:center}
+.space-line .gap.on{width:46px;background:var(--sky);border:3px dashed var(--blue)}
+.space-line .gap.bad{background:#FFD1CC;border-color:var(--red)}
+.space-line .gap.miss{background:#FFF0A8;border:3px dashed #C99A00;width:46px}
+.bd{display:grid;gap:16px;justify-items:center;text-align:center}
+.bd .pic{font-size:110px;line-height:1}
+.bd .word{font-size:84px;font-weight:700;letter-spacing:.06em}
+.bd .word u{text-decoration:none;color:var(--purple);border-bottom:6px solid var(--purple)}
+.bd .pick{display:flex;gap:24px}
+.bd .pick button{width:130px;height:130px;font-size:96px;font-weight:700;border:5px solid var(--ink);border-radius:24px;background:var(--yellow);box-shadow:5px 5px 0 var(--ink);line-height:1}
+.copybox{border:4px solid var(--ink);border-radius:18px;background:var(--white);padding:18px 22px;font-size:46px;line-height:1.3}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.tips div{background:var(--soft);border:3px solid var(--ink);border-radius:14px;padding:10px 12px;font-weight:700;font-size:18px}
+.tips div b{display:block;font-family:var(--display);font-size:22px;letter-spacing:.04em}
+.photo{width:100%;max-width:100%;border:4px solid var(--ink);border-radius:16px;display:block}
+.scorebox{display:grid;gap:10px}
+.scorerow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:20px;font-weight:700;border-bottom:2px dashed #d8d2c2;padding-bottom:6px}
+.scorerow .st{font-size:26px;white-space:nowrap}
+.bigscore{font-family:var(--display);font-size:80px;color:var(--red);text-shadow:3px 3px 0 var(--ink);line-height:1}
+.speech{background:var(--sky);border:4px solid var(--ink);border-radius:18px;padding:14px 18px;font-size:24px;font-weight:700}
+
+/* trophies */
+.track{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+.track i{aspect-ratio:1;border:3px solid var(--ink);border-radius:10px;background:var(--white);display:grid;place-items:center;font-style:normal;font-size:clamp(12px,2.6vw,24px);font-weight:700;color:var(--grey)}
+.track i.on{background:var(--yellow);color:var(--ink)}
+.trophy h3{font-size:32px}
+.trophy p{margin:4px 0 10px;font-weight:700}
+.reward{background:var(--soft);border:3px dashed var(--ink);border-radius:12px;padding:8px 12px;font-weight:700;margin-top:10px}
+
+/* grown-ups */
+.gu label{display:block;font-weight:700;font-size:17px;margin:10px 0 4px}
+.gu input[type=text],.gu input[type=date],.gu textarea{width:100%;font:inherit;font-size:18px;padding:10px 12px;border:3px solid var(--ink);border-radius:12px;background:var(--white);color:var(--ink);-webkit-user-select:text;user-select:text}
+.gu .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.gu h3{font-size:30px;margin-bottom:6px}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.seg button{border:3px solid var(--ink);border-radius:12px;padding:8px 12px;font-weight:700;font-size:17px;background:var(--white);min-height:46px}
+.seg button.on{background:var(--blue);color:var(--white)}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.gallery figure{margin:0;border:3px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--white)}
+.gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.gallery figcaption{padding:6px 8px;font-size:15px;font-weight:700}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:600px){.cmp{grid-template-columns:1fr}}
+.chart{width:100%;height:auto;display:block}
+.note{font-size:16px;color:var(--grey);font-weight:700}
+.holdbtn{position:relative;overflow:hidden}
+.holdbtn .fill{position:absolute;inset:0 auto 0 0;width:0;background:rgba(46,124,246,.25)}
+
+/* celebration */
+.burst{position:fixed;inset:0;display:grid;place-items:center;z-index:50;pointer-events:none}
+.burst div{font-family:var(--display);font-size:clamp(70px,16vw,170px);color:var(--yellow);-webkit-text-stroke:4px var(--ink);text-shadow:8px 8px 0 var(--red);transform:scale(0) rotate(-12deg);animation:pow 1.3s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes pow{0%{transform:scale(0) rotate(-12deg)}35%{transform:scale(1.1) rotate(-6deg)}70%{transform:scale(1) rotate(-6deg);opacity:1}100%{transform:scale(1.3) rotate(-6deg);opacity:0}}
+.modal{position:fixed;inset:0;background:rgba(27,31,59,.55);z-index:40;display:grid;place-items:center;padding:20px}
+.modal .panel{max-width:620px;width:100%;text-align:center;display:grid;gap:14px;justify-items:center}
+.modal h2{font-size:54px;color:var(--red);text-shadow:3px 3px 0 var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--white);padding:12px 20px;border-radius:14px;font-weight:700;z-index:60;max-width:90vw}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.spin{display:inline-block;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="bar"><div class="in">
+  <div class="avatar" id="barAvatar"></div>
+  <h1>Super Bobby<small id="barSub">Hero training</small></h1>
+  <div class="starpill"><span>⭐</span><span id="starCount">0</span></div>
+  <button class="homebtn" id="homeBtn" hidden>Home</button>
+</div></div>
+<main class="wrap" id="app"><div class="panel"><h2 class="disp" style="font-size:40px">Loading Super Bobby…</h2><p>Getting your cape ready.</p></div></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<script src="stories.js" charset="utf-8"></script>
+<script>
+(function(){
+"use strict";
+const S = window.STORIES || [];
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const dkey = (d=new Date()) => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const TODAY = () => dkey();
+const daysBetween = (a,b) => Math.round((new Date(b+"T12:00")-new Date(a+"T12:00"))/864e5);
+
+/* ---------------- state + storage ---------------- */
+let db=null, assets=null, sample=null;
+let settings = {startDate:TODAY(), rewards:{reading:"",dry:"",ownbed:""}, photoId:"", readAloud:true, unlock:0};
+let prog = {days:{}, stories:{}, stars:0, traces:{}};
+let writing = {}; // id -> doc
+const LS="superbobby.v1";
+function lsSave(){try{localStorage.setItem(LS,JSON.stringify({settings,prog,writing}))}catch(e){}}
+function lsLoad(){try{const v=JSON.parse(localStorage.getItem(LS)||"null"); if(v){settings=Object.assign(settings,v.settings||{}); prog=Object.assign(prog,v.prog||{}); writing=Object.assign(writing,v.writing||{});}}catch(e){}}
+try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
+let saveT=null;
+function save(){ lsSave(); clearTimeout(saveT); saveT=setTimeout(async()=>{ if(!db) return;
+  try{ await db.doc("bobby/progress").set(JSON.parse(JSON.stringify(prog))); await db.doc("bobby/settings").set(JSON.parse(JSON.stringify(settings))); }catch(e){ toast("Couldn't save just now - will try again."); }
+ },400); }
+function day(k=TODAY()){ return prog.days[k] || (prog.days[k]={}); }
+function dayNum(){ return Math.min(30, Math.max(1, daysBetween(settings.startDate, TODAY())+1)); }
+function addStars(n){ prog.stars=(prog.stars||0)+n; $("#starCount").textContent=prog.stars; }
+function count(field){ return Object.values(prog.days).filter(d=>d[field]===true).length; }
+function storiesRead(){ return Object.keys(prog.stories||{}).length; }
+function nextEp(){ for(const s of S){ if(!prog.stories[s.n]) return s; } return null; }
+function readToday(){ return Object.entries(prog.stories).filter(([n,d])=>d===TODAY()).map(([n])=>+n); }
+function currentEp(){ const t=readToday(); if(t.length) return S.find(s=>s.n===Math.max(...t)); return nextEp() || S[S.length-1]; }
+function canReadNew(){ return readToday().length===0 || (settings.unlock||0) > 0; }
+
+/* ---------------- sound, haptics, celebration ---------------- */
+let ac=null;
+function ctx(){ if(!ac){ try{ ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(ac&&ac.state==="suspended") ac.resume(); return ac; }
+function tone(freq, t0, dur, type="sine", vol=.22){ const c=ctx(); if(!c) return; const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(0,c.currentTime+t0); g.gain.linearRampToValueAtTime(vol,c.currentTime+t0+.015); g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t0+dur);
+  o.connect(g).connect(c.destination); o.start(c.currentTime+t0); o.stop(c.currentTime+t0+dur+.05); }
+const sfx = {
+  tap(){ tone(880,0,.08,"triangle",.12); buzz(10); },
+  good(){ [784,988,1175,1568].forEach((f,i)=>tone(f,i*.08,.35,"triangle",.18)); buzz([20,40,20]); },
+  star(){ [1319,1760,2093].forEach((f,i)=>tone(f,i*.06,.4,"sine",.15)); },
+  nearly(){ tone(330,0,.18,"sine",.16); tone(294,.16,.25,"sine",.14); buzz(40); },
+  fanfare(){ [523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,i*.12,i===6?.9:.22,"square",.08)); [523,659,784].forEach(f=>tone(f,.84,.9,"triangle",.1)); buzz([30,60,30,60,80]); }
+};
+function buzz(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
+const POWS=["POW!","ZAP!","WHAM!","SUPER!","BOOM!","KAPOW!","YES!"];
+function pow(word){ const b=document.createElement("div"); b.className="burst"; b.innerHTML="<div>"+esc(word||POWS[Math.floor(Math.random()*POWS.length)])+"</div>"; document.body.appendChild(b); setTimeout(()=>b.remove(),1400); }
+function confettiBurst(big){ if(!window.confetti) return; const colors=["#E63B2E","#2E7CF6","#FFC83D","#22A55F","#7B4DFF"];
+  confetti({particleCount:big?220:110,spread:big?120:80,origin:{y:.6},colors,scalar:big?1.3:1.1});
+  if(big){ setTimeout(()=>{confetti({particleCount:120,angle:60,spread:70,origin:{x:0,y:.7},colors,shapes:["square"],scalar:1.4});confetti({particleCount:120,angle:120,spread:70,origin:{x:1,y:.7},colors,shapes:["square"],scalar:1.4});},350);
+    setTimeout(()=>confetti({particleCount:160,spread:160,startVelocity:30,gravity:.6,ticks:400,origin:{y:0},colors,shapes:["square"],scalar:1.6}),800); } }
+function celebrate(big, word){ (big?sfx.fanfare:sfx.good)(); pow(word); confettiBurst(big); }
+let toastT; function toast(m){ let t=$(".toast"); if(!t){t=document.createElement("div");t.className="toast";document.body.appendChild(t);} t.textContent=m; clearTimeout(toastT); toastT=setTimeout(()=>t.remove(),3200); }
+
+/* ---------------- speech ---------------- */
+let voice=null;
+function pickVoice(){ const vs=speechSynthesis.getVoices(); voice = vs.find(v=>/en-GB/i.test(v.lang)&&/female|serena|kate|martha|libby|sonia|emma/i.test(v.name)) || vs.find(v=>/en-GB/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null; }
+try{ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
+function say(text, opts={}){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); if(voice) u.voice=voice; u.lang=voice?voice.lang:"en-GB"; u.rate=opts.rate||.85; u.pitch=1.05;
+  if(opts.onboundary) u.onboundary=opts.onboundary; if(opts.onend) u.onend=opts.onend; speechSynthesis.speak(u); return u; }catch(e){ opts.onend&&opts.onend(); } }
+
+/* ---------------- hero art ---------------- */
+// Cartoon Super Bobby, drawn from Jody's photo: blond crew cut, blue eyes, big gappy grin. 200x200 box.
+const BOBBY_ART=`<g stroke="#1B1F3B" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M34 200 Q30 150 66 142 L134 142 Q170 150 166 200Z" fill="#E63B2E"/><path d="M48 200 Q50 158 100 150 Q150 158 152 200Z" fill="#2E7CF6"/>
+  <path d="M66 142 L82 160 L100 150 L118 160 L134 142" fill="#E63B2E"/><rect x="88" y="136" width="24" height="18" fill="#F4C3A3" stroke="none"/>
+  <circle cx="100" cy="182" r="15" fill="#FFC83D"/><text x="100" y="190" font-family="Bangers, Impact, sans-serif" font-size="22" text-anchor="middle" fill="#E63B2E" stroke="none">B</text>
+  <ellipse cx="55" cy="100" rx="10" ry="14" fill="#F4C3A3"/><ellipse cx="145" cy="100" rx="10" ry="14" fill="#F4C3A3"/>
+  <ellipse cx="100" cy="94" rx="45" ry="51" fill="#F7CDB0"/>
+  <path d="M55 86 Q50 38 100 34 Q150 38 145 86 Q141 70 130 66 Q122 74 110 66 Q100 76 90 66 Q78 74 70 66 Q60 72 55 86Z" fill="#E9B949"/>
+  <path d="M70 50 l6 10 M88 42 l4 12 M106 41 l2 12 M124 46 l-2 12 M138 58 l-6 8" stroke="#C9922E" stroke-width="2.5" fill="none"/>
+  <path d="M72 82 Q82 77 92 81 M108 81 Q118 77 128 82" stroke="#B9843A" stroke-width="3" fill="none"/>
+  <ellipse cx="82" cy="96" rx="9" ry="8" fill="#fff" stroke-width="2.5"/><ellipse cx="118" cy="96" rx="9" ry="8" fill="#fff" stroke-width="2.5"/>
+  <circle cx="83" cy="97" r="5" fill="#3E7FD0" stroke="none"/><circle cx="117" cy="97" r="5" fill="#3E7FD0" stroke="none"/>
+  <circle cx="83" cy="97" r="2.4" fill="#1B1F3B" stroke="none"/><circle cx="117" cy="97" r="2.4" fill="#1B1F3B" stroke="none"/>
+  <circle cx="85" cy="95" r="1.4" fill="#fff" stroke="none"/><circle cx="119" cy="95" r="1.4" fill="#fff" stroke="none"/>
+  <path d="M98 102 Q96 110 101 111" stroke="#C98B6B" stroke-width="2.5" fill="none"/>
+  <circle cx="70" cy="114" r="7" fill="#F29C9C" opacity=".55" stroke="none"/><circle cx="130" cy="114" r="7" fill="#F29C9C" opacity=".55" stroke="none"/>
+  <path d="M77 116 Q100 142 123 116 Q100 124 77 116Z" fill="#7A2E2E" stroke-width="2.5"/><path d="M80 117.5 Q100 124 120 117.5 L118 122 Q100 128 82 122Z" fill="#fff" stroke="none"/>
+  <rect x="97.5" y="119" width="5" height="7" fill="#7A2E2E" stroke="none"/></g>`;
+function heroSVG(size){ const id="c"+Math.random().toString(36).slice(2,7); const photo=settings.photoId?("/_blob/"+settings.photoId):"";
+  return `<svg viewBox="0 0 200 200" width="${size}" height="${size}" aria-hidden="true">
+  <defs><clipPath id="${id}"><circle cx="100" cy="100" r="94"/></clipPath></defs>
+  <circle cx="100" cy="100" r="96" fill="#FFC83D" stroke="#1B1F3B" stroke-width="6"/>
+  ${photo?`<image href="${photo}" x="4" y="4" width="192" height="192" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id})"/>`:`<g clip-path="url(#${id})">${BOBBY_ART}</g>`}
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#1B1F3B" stroke-width="6"/></svg>`; }
+function capeStar(filled, size=170){ // 30 gold dots round the star, from the story
+  let dots=""; for(let i=0;i<30;i++){ const a=-Math.PI/2+i*2*Math.PI/30, x=100+82*Math.cos(a), y=100+82*Math.sin(a); dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${i<filled?"#FFC83D":"#fff"}" stroke="#1B1F3B" stroke-width="2.5"/>`; }
+  return `<svg viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="${filled} of 30 gold dots"><circle cx="100" cy="100" r="96" fill="#E63B2E" stroke="#1B1F3B" stroke-width="4"/>${dots}
+  <path d="M100 38 l15 33 36 3 -27 24 8 36 -32 -19 -32 19 8 -36 -27 -24 36 -3z" fill="#FFC83D" stroke="#1B1F3B" stroke-width="4" stroke-linejoin="round"/>
+  <text x="100" y="118" text-anchor="middle" font-family="Bangers,sans-serif" font-size="36" fill="#1B1F3B">${filled}</text></svg>`; }
+
+/* scene pictures: background by place + characters spotted in the words */
+const PLACES={
+  field:{sky:"#9FD8FF",ground:"#6CC56F",extra:`<path d="M0 150 Q80 110 160 140 T320 130 V240 H0Z" fill="#4FAE58"/>`},
+  hill:{sky:"#9FD8FF",ground:"#6CC56F",extra:`<path d="M-10 170 Q120 60 250 150 T340 160 V240 H-10Z" fill="#3E9C4C"/>`},
+  barn:{sky:"#C98A56",ground:"#E7C27A",extra:`<rect x="0" y="0" width="320" height="240" fill="#B5733F"/>${Array.from({length:8},(_,i)=>`<rect x="${i*40}" y="0" width="4" height="170" fill="#8E552B"/>`).join("")}<path d="M0 175 Q60 140 120 170 Q190 135 250 168 Q290 150 320 165 V240 H0Z" fill="#F2CF6B"/>`},
+  loft:{sky:"#A8693A",ground:"#F2CF6B",extra:`<path d="M0 0 L160 -40 L320 0 V60 L160 20 L0 60Z" fill="#7A4523"/><rect x="250" y="40" width="10" height="200" fill="#7A4523"/><rect x="290" y="40" width="10" height="200" fill="#7A4523"/>${[70,100,130,160,190].map(y=>`<rect x="250" y="${y}" width="50" height="7" fill="#7A4523"/>`).join("")}`},
+  stables:{sky:"#9FD8FF",ground:"#C9A46A",extra:`<rect x="20" y="70" width="280" height="110" fill="#9C5B32" stroke="#1B1F3B" stroke-width="3"/><path d="M10 72 L160 30 L310 72Z" fill="#5E3A22" stroke="#1B1F3B" stroke-width="3"/>${[45,135,225].map(x=>`<rect x="${x}" y="105" width="50" height="75" fill="#3A2416"/><rect x="${x}" y="105" width="50" height="30" fill="#F2CF6B"/>`).join("")}`},
+  bedroom:{sky:"#3B3F8F",ground:"#7F6BD1",extra:`<rect x="210" y="25" width="80" height="70" rx="6" fill="#141A4A" stroke="#fff" stroke-width="5"/><circle cx="268" cy="45" r="9" fill="#FFF4B0"/><rect x="20" y="140" width="190" height="45" rx="10" fill="#2E7CF6" stroke="#1B1F3B" stroke-width="3"/><rect x="20" y="118" width="46" height="30" rx="10" fill="#fff" stroke="#1B1F3B" stroke-width="3"/>`},
+  night:{sky:"#141A4A",ground:"#264B3A",extra:`<circle cx="260" cy="45" r="22" fill="#FFF4B0"/>${[[30,30],[90,60],[150,25],[200,80],[60,95],[300,100]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.5" fill="#fff"/>`).join("")}<path d="M60 170 L60 120 L100 92 L140 120 L140 170Z" fill="#3A2416"/>`},
+  woods:{sky:"#7FC4E8",ground:"#3E7D3F",extra:[20,80,150,230,290].map((x,i)=>`<rect x="${x+14}" y="${90+i%2*10}" width="12" height="90" fill="#6B4223"/><circle cx="${x+20}" cy="${80+i%2*10}" r="38" fill="${i%2?"#2F7A3A":"#3C9147"}"/>`).join("")},
+  wall:{sky:"#9FD8FF",ground:"#5DB561",extra:`${Array.from({length:18},(_,i)=>`<rect x="${(i%9)*36-(Math.floor(i/9)%2)*18}" y="${120+Math.floor(i/9)*28}" width="34" height="26" rx="6" fill="#9A9AA8" stroke="#1B1F3B" stroke-width="2"/>`).join("")}<ellipse cx="160" cy="146" rx="42" ry="24" fill="#1B1F3B"/>`},
+  pond:{sky:"#9FD8FF",ground:"#6CC56F",extra:`<ellipse cx="160" cy="190" rx="140" ry="40" fill="#3D8FE0" stroke="#1B1F3B" stroke-width="3"/><path d="M60 190 q15 -8 30 0 M200 200 q15 -8 30 0" stroke="#fff" stroke-width="3" fill="none"/>`},
+  stream:{sky:"#9FD8FF",ground:"#7A5A35",extra:`<path d="M0 200 Q100 170 180 200 T320 190 V240 H0Z" fill="#3D8FE0"/><ellipse cx="160" cy="185" rx="80" ry="18" fill="#5A3E22"/>`},
+  kitchen:{sky:"#FFE7B8",ground:"#E2B07A",extra:`<rect x="0" y="150" width="320" height="10" fill="#9C5B32"/><rect x="40" y="40" width="80" height="60" rx="6" fill="#9FD8FF" stroke="#fff" stroke-width="6"/><rect x="200" y="110" width="100" height="40" fill="#C0392B"/><circle cx="250" cy="70" r="20" fill="#fff" stroke="#1B1F3B" stroke-width="3"/>`},
+  storm:{sky:"#4A5068",ground:"#3B5E3E",extra:`<path d="M60 40 q20-30 50-10 q30-25 55 5 q30 0 25 25 H50 q-20-5 10-20z" fill="#2C3045"/><path d="M200 60 l-15 35 h15 l-10 30" stroke="#FFC83D" stroke-width="6" fill="none" stroke-linejoin="round"/>${Array.from({length:14},(_,i)=>`<line x1="${i*24}" y1="${70+i%3*20}" x2="${i*24-8}" y2="${95+i%3*20}" stroke="#BFE6FF" stroke-width="3"/>`).join("")}`},
+  sky:{sky:"#7CC8FF",ground:"#7CC8FF",extra:`<ellipse cx="70" cy="70" rx="45" ry="18" fill="#fff"/><ellipse cx="250" cy="120" rx="55" ry="20" fill="#fff"/><path d="M0 220 Q160 190 320 220 V240 H0Z" fill="#6CC56F"/>`},
+  lane:{sky:"#9FD8FF",ground:"#6CC56F",extra:`<path d="M130 240 L170 120 L190 120 L230 240Z" fill="#B99A6B"/><path d="M0 130 H320" stroke="#3E9C4C" stroke-width="18"/>`},
+  party:{sky:"#B5733F",ground:"#F2CF6B",extra:`<path d="M0 30 Q80 60 160 30 T320 30" stroke="#1B1F3B" stroke-width="2" fill="none"/>${Array.from({length:10},(_,i)=>`<path d="M${i*32+6} ${34+Math.sin(i)*6} l12 0 -6 18z" fill="${["#E63B2E","#2E7CF6","#FFC83D","#22A55F"][i%4]}"/>`).join("")}`}
+};
+const CHARS=[[/spark|dragon/i,"🐉"],[/mama|big dragon|huge dragon/i,"🐲"],[/hound|bramble|woof/i,"🐕"],[/pony|pip|horse/i,"🐴"],[/duck/i,"🦆"],[/carrot/i,"🥕"],[/toast/i,"🍞"],[/cake/i,"🎂"],[/fire|flame/i,"🔥"],[/cape|hero|star/i,"🦸"],[/daisy/i,"👧"],[/ronnie|harry|boys/i,"👦"],[/mummy/i,"👩"],[/daddy/i,"👨"],[/teddy/i,"🧸"],[/medal/i,"🏅"],[/rope/i,"🪢"],[/bucket|water/i,"🪣"],[/rain|storm/i,"🌧️"],[/moon/i,"🌕"],[/ball/i,"🔴"],[/scale|coin/i,"💚"],[/hat/i,"👒"],[/note/i,"📜"],[/smoke/i,"💨"],[/eyes/i,"👀"],[/box/i,"📦"]];
+function sceneSVG(place, text){ const p=PLACES[place]||PLACES.field; let found=/bobby/i.test(text)?["BOBBY"]:[]; for(const [re,e] of CHARS){ if(e==="🦸"&&found[0]==="BOBBY") continue; if(re.test(text) && !found.includes(e)) found.push(e); if(found.length>=4) break; }
+  const spots=[[70,175,64],[160,165,74],[250,178,60],[115,110,50]];
+  const ems=found.map((e,i)=>{const [x,y,s]=spots[i]; if(e==="BOBBY") return `<g transform="translate(${x-44},${y-62}) scale(.44)">${BOBBY_ART}</g>`; const sz=e==="🐲"?110:s; return `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="middle" dominant-baseline="middle">${e}</text>`;}).join("");
+  return `<svg viewBox="0 0 320 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="240" fill="${p.sky}"/><rect y="180" width="320" height="60" fill="${p.ground}"/>${p.extra}${ems}</svg>`; }
+
+/* ---------------- router ---------------- */
+let screen="home";
+function go(name, arg){ try{speechSynthesis.cancel();}catch(e){} screen=name; $("#homeBtn").hidden = name==="home"; window.scrollTo(0,0); (SCREENS[name]||SCREENS.home)(arg); }
+$("#homeBtn").onclick=()=>{sfx.tap();go("home");};
+function renderBar(){ $("#barAvatar").innerHTML=heroSVG(62); $("#starCount").textContent=prog.stars||0; $("#barSub").textContent="Day "+dayNum()+" of 30"; }
+
+/* ---------------- HOME ---------------- */
+function missionsDone(){ const d=day(); return {morning: d.dry!==undefined && d.ownbed!==undefined, story: readToday().length>0, spell: !!d.spell, hand: !!d.hand}; }
+const SCREENS={};
+SCREENS.home=function(){ renderBar(); const m=missionsDone(); const ep=currentEp(); const allDone=m.morning&&m.story&&m.spell&&m.hand;
+  const hour=new Date().getHours(); const hi = hour<12?"Good morning":hour<17?"Hi":"Good evening";
+  app.innerHTML=`<div class="grid">
+  <section class="panel hero"><div class="big" style="position:relative">${heroSVG(170)}<div style="position:absolute;right:-16px;bottom:-12px">${capeStar(count("ownbed"),78)}</div></div>
+   <div class="txt"><h2>${hi}, Super Bobby!</h2>
+   <p>${allDone?"All 4 missions done today. You are a SUPER HERO!":"Do your missions to power up your cape."}</p>
+   <span class="daybadge">Day ${dayNum()} of 30</span></div></section>
+  <div class="grid missions">
+   ${mission("morning","☀️","Wake Up","How was last night?",m.morning)}
+   ${mission("story","📖","Story Time",(ep?("Night "+ep.n+": "+ep.title):"All 30 read!"),m.story)}
+   ${mission("spell","🔤","Spellings","4 magic words",m.spell)}
+   ${mission("hand","✍️","Hero Hands","Writing training",m.hand)}
+  </div>
+  <div class="row" style="justify-content:space-between">
+   <button class="btn white small" id="toTrophies">🏆 My trophies</button>
+   <button class="linkbtn holdbtn" id="toGrown"><span class="fill"></span>Grown-ups (hold)</button>
+  </div></div>`;
+  app.querySelectorAll(".mission").forEach(b=>b.onclick=()=>{sfx.tap(); go(b.dataset.go);});
+  $("#toTrophies").onclick=()=>{sfx.tap();go("trophies");};
+  holdToOpen($("#toGrown"),()=>go("grown"));
+};
+function mission(id,ic,name,sub,done){ return `<button class="mission m-${id} ${done?"done":""}" data-go="${id}"><span class="ic">${ic}</span><h3>${name}</h3><p>${esc(sub)}</p><span class="tick">✓</span></button>`; }
+function holdToOpen(btn,fn){ let t,st; const fill=btn.querySelector(".fill");
+  const start=e=>{e.preventDefault(); st=Date.now(); fill.style.transition="width 1.6s linear"; fill.style.width="100%"; t=setTimeout(()=>{fn();},1600);};
+  const stop=()=>{clearTimeout(t); fill.style.transition="none"; fill.style.width="0";};
+  btn.addEventListener("pointerdown",start); btn.addEventListener("pointerup",stop); btn.addEventListener("pointerleave",stop); btn.addEventListener("pointercancel",stop);
+  btn.onclick=e=>{ if(Date.now()-(st||0)<1500) toast("Grown-ups: press and hold for 2 seconds."); }; }
+
+/* ---------------- MORNING ---------------- */
+SCREENS.morning=function(){ const d=day(); const qs=[
+  {f:"ownbed",h:"Last night, did you go to sleep on your own?",y:["🦸","I did it!"],n:["🌙","Not this time"]},
+  {f:"dry",h:"Was your bed dry this morning?",y:["☀️","Dry bed!"],n:["🌧️","Not this time"]}];
+  let i=0; if(d.ownbed!==undefined) i=1; if(d.ownbed!==undefined && d.dry!==undefined) i=2;
+  function show(){ if(i>=qs.length) return summary();
+    const q=qs[i]; app.innerHTML=`<div class="panel qcard"><h2>${q.h}</h2><div class="choice"><button class="yes" id="y"><span>${q.y[0]}</span>${q.y[1]}</button><button class="notyet" id="n"><span>${q.n[0]}</span>${q.n[1]}</button></div><button class="linkbtn" id="hear">🔊 Hear it</button></div>`;
+    say(q.h);
+    $("#hear").onclick=()=>say(q.h);
+    $("#y").onclick=()=>{ const first=d[q.f]===undefined; d[q.f]=true; if(first) addStars(3); save(); celebrate(false); const c=count(q.f); i++; setTimeout(()=>{ if(c===30) bigWin(q.f); show(); },1100); };
+    $("#n").onclick=()=>{ d[q.f]=false; save(); sfx.tap(); say("That's OK. Heroes keep trying. You can do it tonight!"); i++; setTimeout(show,1800); };
+  }
+  function summary(){ const dry=count("dry"), own=count("ownbed");
+    app.innerHTML=`<div class="panel qcard"><h2>Morning missions done!</h2><div class="row" style="justify-content:center">${capeStar(own,190)}</div>
+    <p style="font-size:24px;font-weight:700;margin:0">Brave nights on your own: ${own} of 30<br>Dry beds: ${dry} of 30</p>
+    <div class="row" style="justify-content:center"><button class="btn red" id="h">Back to base</button><button class="btn white small" id="redo">Change answers</button></div></div>`;
+    $("#h").onclick=()=>go("home"); $("#redo").onclick=()=>{delete d.ownbed; delete d.dry; save(); go("morning");}; }
+  show(); };
+function bigWin(f){ const names={ownbed:"30 brave nights on your own!",dry:"30 dry beds!",reading:"All 30 stories read!"}; const rw=(settings.rewards||{})[f==="reading"?"reading":f];
+  celebrate(true,"30!"); setTimeout(()=>celebrate(true,"SUPER!"),1500);
+  const m=document.createElement("div"); m.className="modal"; m.innerHTML=`<div class="panel"><h2>YOU DID IT!</h2>${capeStar(30,180)}<p style="font-size:26px;font-weight:700;margin:0">${names[f]}</p>${rw?`<div class="reward" style="font-size:22px">Your prize: ${esc(rw)}</div>`:""}<button class="btn green">Yay!</button></div>`;
+  document.body.appendChild(m); m.querySelector("button").onclick=()=>m.remove(); say("You did it Bobby! "+names[f]); }
+
+/* ---------------- STORY ---------------- */
+SCREENS.story=function(){ const nx=nextEp(); const free=canReadNew();
+  const items=S.map(s=>{ const read=!!prog.stories[s.n]; const isNext=nx&&s.n===nx.n; const locked=!read && !(isNext&&free);
+    return `<button class="ep ${read?"read":""} ${isNext&&free?"next":""} ${locked?"locked":""}" data-n="${s.n}" ${locked?"disabled":""}><b>Night ${s.n}${read?" ✓":locked?" 🔒":""}</b><span>${esc(s.title)}</span></button>`; }).join("");
+  app.innerHTML=`<div class="grid"><div class="panel"><h2 class="title">Super Bobby and the Barn Dragon</h2>
+   <p class="sub">${nx?(free?`Tonight: Night ${nx.n}, "${esc(nx.title)}"`:`Tonight's story is done. Night ${nx.n} opens tomorrow!`):"You read all 30 nights!"}</p>
+   ${nx&&free?`<button class="btn red" id="start">Read Night ${nx.n} 📖</button>`:""}</div>
+   <div class="grid shelf">${items}</div></div>`;
+  if($("#start")) $("#start").onclick=()=>{sfx.tap();go("read",nx.n);};
+  app.querySelectorAll(".ep:not([disabled])").forEach(b=>b.onclick=()=>{sfx.tap();go("read",+b.dataset.n);});
+};
+SCREENS.read=function(arg){ const preview=typeof arg==="object"&&arg.preview; const n=preview?arg.n:arg; const st=S.find(s=>s.n===n); let p=0; const keyset=new Set(st.words.map(w=>w.toLowerCase()));
+  function words(t){ return t.split(/(\s+)/).map(tok=>{ if(/^\s+$/.test(tok)) return " "; const clean=tok.replace(/[^A-Za-z']/g,"").toLowerCase().replace(/'s$/,""); return `<span class="w ${keyset.has(clean)?"key":""}" data-w="${esc(tok.replace(/[^A-Za-z']/g,""))}">${esc(tok)}</span>`; }).join(""); }
+  function page(){ const pg=st.pages[p]; const last=p===st.pages.length-1;
+    app.innerHTML=`<div class="panel"><div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 class="disp" style="font-size:34px;color:var(--blue)">${preview?"Preview · ":""}Night ${st.n}: ${esc(st.title)}</h2><div class="dots">${st.pages.map((_,i)=>`<i class="${i<=p?"on":""}"></i>`).join("")}</div></div>
+     <div class="reader"><div class="scene">${sceneSVG(pg.s,pg.t)}</div>
+     <div class="page"><p class="ptext" id="pt">${words(pg.t)}</p>
+      <p class="note" style="margin:0">Tap a word to hear it. Green words are your spellings.</p>
+      <div class="row"><button class="btn white small" id="back" ${p===0?"disabled":""}>◀</button><button class="btn blue small" id="aloud">🔊 Read to me</button><button class="btn green" id="next" style="flex:1">${last?"I read it! 🎉":"I read it! ▶"}</button></div></div></div></div>`;
+    app.querySelectorAll(".w").forEach(w=>w.onclick=()=>{ app.querySelectorAll(".w.hl").forEach(x=>x.classList.remove("hl")); w.classList.add("hl"); say(w.dataset.w,{rate:.75}); });
+    $("#aloud").onclick=()=>{ const spans=[...app.querySelectorAll(".w")]; let starts=[],pos=0; spans.forEach(s=>{starts.push(pos); pos+=s.textContent.length+1;});
+      say(pg.t,{onboundary:e=>{ if(e.name&&e.name!=="word") return; let k=0; while(k+1<starts.length&&starts[k+1]<=e.charIndex) k++; spans.forEach(s=>s.classList.remove("hl")); spans[k]&&spans[k].classList.add("hl"); }, onend:()=>spans.forEach(s=>s.classList.remove("hl"))}); };
+    $("#back").onclick=()=>{ if(p>0){p--;sfx.tap();page();} };
+    $("#next").onclick=()=>{ sfx.star(); if(!preview){ addStars(1); save(); } if(last) quiz(); else { p++; page(); } };
+  }
+  let qi=0, got=0;
+  function quiz(){ if(qi>=st.q.length) return done(); const q=st.q[qi];
+    app.innerHTML=`<div class="panel qcard"><h2 class="disp" style="font-size:40px">Super Quiz ${qi+1} of ${st.q.length}</h2><p style="font-size:34px;font-weight:700;margin:0">${esc(q.q)}</p><button class="linkbtn" id="hq">🔊 Hear it</button><div class="quiz">${q.a.map((a,i)=>`<button data-i="${i}">${esc(a)}</button>`).join("")}</div></div>`;
+    $("#hq").onclick=()=>say(q.q+" "+q.a.join(". Or, "));
+    let tries=0; app.querySelectorAll(".quiz button").forEach(b=>b.onclick=()=>{ const i=+b.dataset.i; if(i===q.c){ b.classList.add("right"); if(tries===0){got++; if(!preview) addStars(2);} sfx.good(); pow("YES!"); if(!preview) save(); setTimeout(()=>{qi++;quiz();},1100);} else { tries++; b.classList.add("wrong"); sfx.nearly(); say("Nearly! Have another go."); } }); }
+  function done(){ if(preview){ app.innerHTML=`<div class="panel qcard"><h2>Preview finished</h2><p style="font-size:22px;font-weight:700;margin:0">Nothing was saved. Bobby's stories and stars are unchanged.</p><div class="row" style="justify-content:center"><button class="btn red" id="h">Back to Grown-ups</button></div></div>`; $("#h").onclick=()=>go("grown"); return; }
+    const wasNew=!prog.stories[st.n]; if(wasNew){ prog.stories[st.n]=TODAY(); if(settings.unlock>0 && readToday().length>1) settings.unlock--; addStars(5); } save();
+    celebrate(true,"THE END!"); const nx=S.find(s=>s.n===st.n+1);
+    app.innerHTML=`<div class="panel qcard"><h2>Night ${st.n} done!</h2><p style="font-size:26px;font-weight:700;margin:0">You got ${got} of ${st.q.length} quiz answers first time.</p>
+     ${nx?`<div class="speech">What happens next? Find out tomorrow in Night ${nx.n}: "${esc(nx.title)}"</div>`:`<div class="speech">That's the whole adventure. Super Bobby!</div>`}
+     <div class="row" style="justify-content:center"><button class="btn red" id="h">Back to base</button></div></div>`;
+    $("#h").onclick=()=>go("home"); if(storiesRead()===30 && wasNew) setTimeout(()=>bigWin("reading"),1800); }
+  page(); };
+
+/* ---------------- SPELLING ---------------- */
+SCREENS.spell=function(){ const ep=currentEp(); const list=ep.words.slice(0,4); let wi=0, score=0;
+  function look(){ if(wi>=list.length) return finish(); const w=list[wi];
+    app.innerHTML=`<div class="panel qcard"><p class="sub" style="margin:0">Word ${wi+1} of ${list.length} · from Night ${ep.n}</p><h2>Look and say</h2><div class="bigword">${esc(w)}</div>
+     <div class="row" style="justify-content:center"><button class="btn blue" id="hear">🔊 Hear it</button><button class="btn green" id="ready">I'm ready! ▶</button></div><p class="note">Say the sounds: ${w.split("").join(" - ")}</p></div>`;
+    say(w,{rate:.7}); $("#hear").onclick=()=>say(w,{rate:.7}); $("#ready").onclick=()=>{sfx.tap();build(w,0);}; }
+  function build(w, fails){ const extra="abcdefghilmnoprstu".split("").filter(c=>!w.includes(c)).sort(()=>Math.random()-.5).slice(0,Math.min(3,7-w.length>0?3:2));
+    const tiles=(w.split("").concat(extra)).map((c,i)=>({c,i})).sort(()=>Math.random()-.5); let typed=[];
+    app.innerHTML=`<div class="panel qcard"><p class="sub" style="margin:0">Word ${wi+1} of ${list.length}</p><h2>Build the word!</h2><button class="linkbtn" id="hear" style="font-size:22px">🔊 Hear the word again</button>
+     <div class="slots" id="slots">${w.split("").map(()=>`<div class="slot"></div>`).join("")}</div>
+     <div class="tiles" id="tiles">${tiles.map(t=>`<button class="tile" data-i="${t.i}">${esc(t.c)}</button>`).join("")}</div>
+     <div class="row" style="justify-content:center"><button class="btn white small" id="undo">⌫ Undo</button><button class="btn white small" id="peek">👀 Peek</button></div></div>`;
+    say(w,{rate:.7}); $("#hear").onclick=()=>say(w,{rate:.7});
+    const slots=[...app.querySelectorAll(".slot")];
+    function draw(){ slots.forEach((s,i)=>{ s.textContent=typed[i]?typed[i].c:""; s.className="slot"; }); }
+    app.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{ if(typed.length>=w.length) return; sfx.tap(); typed.push({c:b.textContent,b}); b.disabled=true; draw(); try{say(b.textContent,{rate:.8});}catch(e){} if(typed.length===w.length) check(); });
+    $("#undo").onclick=()=>{ const t=typed.pop(); if(t){t.b.disabled=false; draw();} };
+    $("#peek").onclick=()=>{ fails=Math.max(fails,1); const sl=$("#slots"); const old=sl.innerHTML; sl.innerHTML=`<div class="bigword">${esc(w)}</div>`; setTimeout(()=>{sl.innerHTML=old; slots.splice(0,slots.length,...app.querySelectorAll(".slot")); draw();},1800); };
+    function check(){ const got=typed.map(t=>t.c).join(""); if(got===w){ slots.forEach(s=>s.classList.add("ok")); if(fails===0){score++; addStars(2);} else addStars(1); save(); celebrate(false); say(w+"! Super spelling!"); setTimeout(()=>{wi++;look();},1500); }
+      else { slots.forEach((s,i)=>s.classList.add(typed[i].c===w[i]?"ok":"bad")); sfx.nearly(); say("Nearly! Let's try again."); setTimeout(()=>build(w,fails+1),1600); } }
+  }
+  function finish(){ const d=day(); const first=!d.spell; d.spell=true; if(first) addStars(3); save(); celebrate(true,"SPELL-TASTIC!");
+    app.innerHTML=`<div class="panel qcard"><h2>Spelling power up!</h2><p style="font-size:26px;font-weight:700;margin:0">${score} of ${list.length} first time.</p><div class="speech">Look out for these words in tonight's story: ${list.map(esc).join(", ")}</div><div class="row" style="justify-content:center"><button class="btn red" id="h">Back to base</button><button class="btn white small" id="again">Do them again</button></div></div>`;
+    $("#h").onclick=()=>go("home"); $("#again").onclick=()=>go("spell"); }
+  look(); };
+
+/* ---------------- HERO HANDS (handwriting) ---------------- */
+// Letter strokes in a 100-wide box: top line 0, middle (dotted) 35, base line 70, tail line 100.
+const L={
+ c:["M64 41 A17.5 17.5 0 1 0 64 64"], o:["M50 35 A17.5 17.5 0 0 0 50 70 A17.5 17.5 0 0 0 50 35"],
+ a:["M66 41 A17.5 17.5 0 1 0 66 64","M67 35 L67 70"], d:["M66 41 A17.5 17.5 0 1 0 66 64","M67 0 L67 70"],
+ g:["M66 41 A17.5 17.5 0 1 0 66 64","M67 35 L67 88 Q67 100 52 100 Q42 100 36 93"], q:["M66 41 A17.5 17.5 0 1 0 66 64","M67 35 L67 100"],
+ e:["M34 52 L66 52 A17 17 0 1 0 62 65"], s:["M64 40 Q58 35 50 35 Q36 35 36 44 Q36 52 50 53 Q64 54 64 62 Q64 70 50 70 Q40 70 35 65"],
+ f:["M64 6 Q58 0 50 0 Q42 0 42 12 L42 70","M30 36 L58 36"],
+ l:["M50 0 L50 70"], i:["M50 35 L50 70","M50 19 L50 21"], t:["M48 12 L48 62 Q48 70 56 70 Q62 70 65 66","M36 35 L62 35"],
+ j:["M55 35 L55 88 Q55 100 44 100 Q36 100 32 94","M55 19 L55 21"], u:["M34 35 L34 56 Q34 70 50 70 Q66 70 66 56 L66 35 L66 70"],
+ y:["M34 35 L34 52 Q34 64 50 64 Q66 64 66 52 L66 35 L66 88 Q66 100 52 100 Q42 100 36 93"],
+ r:["M38 35 L38 70 L38 48 Q44 35 56 35 Q63 35 66 39"], n:["M36 35 L36 70 L36 50 Q38 35 50 35 Q64 35 64 50 L64 70"],
+ m:["M28 35 L28 70 L28 48 Q30 35 39 35 Q50 35 50 48 L50 70 L50 48 Q52 35 61 35 Q72 35 72 48 L72 70"],
+ h:["M36 0 L36 70 L36 50 Q38 35 50 35 Q64 35 64 50 L64 70"], b:["M36 0 L36 70 L36 52 Q36 35 51 35 Q66 35 66 52.5 Q66 70 51 70 Q40 70 36 62"],
+ p:["M36 35 L36 100 L36 52 Q36 35 51 35 Q66 35 66 52.5 Q66 70 51 70 Q40 70 36 62"], k:["M36 0 L36 70","M62 35 L37 56 L64 70"],
+ v:["M32 35 L50 70 L68 35"], w:["M22 35 L35 70 L50 42 L65 70 L78 35"], x:["M34 35 L66 70","M66 35 L34 70"], z:["M34 35 L66 35 L34 70 L66 70"],
+ B:["M34 0 L34 70","M34 0 L52 0 Q66 0 66 17 Q66 34 50 34 L34 34 M50 34 Q70 34 70 52 Q70 70 52 70 L34 70"],
+ D:["M34 0 L34 70","M34 0 L44 0 Q72 0 72 35 Q72 70 44 70 L34 70"]
+};
+const FAMS=[
+ {name:"Curly Caterpillar",ic:"🐛",tip:"Start at the top, go back round like a c.",letters:"c a o d g e s q f".split(" ")},
+ {name:"Long Ladder",ic:"🪜",tip:"Start at the top. Go straight down.",letters:"l i t j u y".split(" ")},
+ {name:"Robot Arm",ic:"🤖",tip:"Down the stick, back up, and over.",letters:"r n m h b p k".split(" ")},
+ {name:"Zigzag Monster",ic:"⚡",tip:"Sharp points, no curves.",letters:"v w x z".split(" ")},
+ {name:"b and d Team",ic:"🛏️",tip:"b: bat then ball. d: c-ball then the bat.",letters:"b d B D".split(" ")}
+];
+function todayLetters(){ const i=dayNum()-1; const fam=FAMS[i%FAMS.length]; const round=Math.floor(i/FAMS.length); const ls=fam.letters; const out=[]; for(let k=0;k<3;k++) out.push(ls[(round*3+k)%ls.length]); return {fam,letters:[...new Set(out)]}; }
+const GYM=[
+ {ic:"🕷️",t:"Spider push-ups",d:"Put your fingertips together. Press and push 10 times."},
+ {ic:"✊",t:"Fist and star",d:"Make a tight fist. Now open into a big star hand. Do it 10 times."},
+ {ic:"🌧️",t:"Rain fingers",d:"Tap your fingers on the table like rain. Fast, then slow."},
+ {ic:"👍",t:"Thumb touches",d:"Touch your thumb to each finger. Pointer, middle, ring, little. Then back."},
+ {ic:"🐊",t:"Crocodile grip",d:"Pick up your pencil. Pinch it with your thumb and pointer finger. Let it rest on your middle finger. Snap!"},
+ {ic:"🪑",t:"Sit like a hero",d:"Feet flat on the floor. Back tall. Your other hand holds the paper still."}
+];
+const BD=[["ed","🛏️","b"],["og","🐶","d"],["all","⚽","b"],["uck","🦆","d"],["us","🚌","b"],["oor","🚪","d"],["ird","🐦","b"],["rum","🥁","d"],["anana","🍌","b"],["inosaur","🦕","d"],["ee","🐝","b"],["ragon","🐉","d"],["ox","📦","b"],["ad","👨","d"],["oat","⛵","b"],["uck","🦆","d"],["ear","🐻","b"],["iamond","💎","d"]];
+
+SCREENS.hand=function(){ const d=day(); const h=d.h||(d.h={}); const {fam,letters}=todayLetters(); const gameIsBD = dayNum()%2===1;
+  const steps=[["gym","🏋️","Finger Gym","1 minute warm-up"],["trace","✏️","Trace Letters",fam.name+": "+letters.join(" ")],[gameIsBD?"bd":"space",gameIsBD?"🛏️":"👆",gameIsBD?"b or d?":"Finger Spaces",gameIsBD?"Bat and ball game":"Space out the words"],["paper","📝","Paper Mission","Write it, then take a photo"]];
+  app.innerHTML=`<div class="grid"><div class="panel"><h2 class="title">Hero Hands Training</h2><p class="sub">Short and strong. About 8 minutes. Stop if your hand feels tired.</p>
+   <div class="grid steps">${steps.map(([id,ic,t,s])=>`<button class="step ${h[id]?"done":""}" data-s="${id}"><span class="ic">${ic}</span><b>${t}</b><span>${esc(s)}</span></button>`).join("")}</div></div>
+   <div class="panel"><span class="fam">${fam.ic} Today: ${fam.name}</span><p style="font-weight:700;margin:10px 0 0">${esc(fam.tip)}</p></div></div>`;
+  app.querySelectorAll(".step").forEach(b=>b.onclick=()=>{sfx.tap(); go("h_"+b.dataset.s);});
+};
+function handStep(id){ const d=day(); const h=d.h||(d.h={}); const first=!h[id]; h[id]=true; if(first) addStars(2);
+  if(!d.hand && h.trace && h.paper){ d.hand=true; addStars(3); save(); celebrate(true,"HERO HANDS!"); } else { save(); celebrate(false); } }
+
+SCREENS.h_gym=function(){ let k=0, left=10, tm=null;
+  function show(){ if(k>=GYM.length){ clearInterval(tm); handStep("gym"); app.innerHTML=`<div class="panel gym"><span class="ic">💪</span><h2>Hands warmed up!</h2><button class="btn red" id="b">Back to training</button></div>`; $("#b").onclick=()=>go("hand"); return; }
+    const g=GYM[k]; left=10; app.innerHTML=`<div class="panel gym"><p class="sub" style="margin:0">${k+1} of ${GYM.length}</p><span class="ic">${g.ic}</span><h2>${g.t}</h2><p style="font-size:28px;font-weight:700;margin:0;max-width:640px">${esc(g.d)}</p><div class="timer" id="tm">${left}</div><div class="row"><button class="btn white small" id="hear">🔊 Hear it</button><button class="btn green" id="nx">Next ▶</button></div></div>`;
+    say(g.t+". "+g.d); $("#hear").onclick=()=>say(g.d); $("#nx").onclick=()=>{sfx.star(); k++; show();};
+    clearInterval(tm); tm=setInterval(()=>{ if(!$("#tm")) return clearInterval(tm); left--; $("#tm").textContent=Math.max(0,left); if(left===0){ sfx.star(); clearInterval(tm);} },1000); }
+  show(); };
+
+SCREENS.h_trace=function(){ const {fam,letters}=todayLetters(); let li=0; const best={};
+  function show(){ if(li>=letters.length) return finish(); const ch=letters[li]; const strokes=L[ch];
+    app.innerHTML=`<div class="panel"><div class="row" style="justify-content:space-between"><span class="fam">${fam.ic} ${fam.name} · letter ${li+1} of ${letters.length}</span><span class="note">Use your finger or a pencil</span></div>
+     <div class="tstars" id="ts"></div>
+     <div class="tracewrap" id="tw">
+      <svg viewBox="-10 -15 120 130" id="sv"><line x1="-10" x2="110" y1="0" y2="0" stroke="#7CC8FF" stroke-width="1.2"/><line x1="-10" x2="110" y1="35" y2="35" stroke="#B9B4D6" stroke-width="1.2" stroke-dasharray="3 3"/><line x1="-10" x2="110" y1="70" y2="70" stroke="#22A55F" stroke-width="2.4"/><line x1="-10" x2="110" y1="100" y2="100" stroke="#C49A6C" stroke-width="1.2"/>
+      <g id="ghost">${strokes.map(s=>`<path d="${s}" fill="none" stroke="#E7E3F2" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>`).join("")}${strokes.map(s=>`<path d="${s}" fill="none" stroke="#A9A3C4" stroke-width="1.6" stroke-dasharray="3 4" stroke-linecap="round"/>`).join("")}</g>
+      <g id="anim"></g><g id="starts"></g></svg>
+      <canvas id="cv"></canvas></div>
+     <div class="row" style="justify-content:center;margin-top:16px"><button class="btn blue small" id="watch">👀 Watch me</button><button class="btn white small" id="clr">🧽 Clear</button><button class="btn green" id="chk">Check it! ⭐</button></div>
+     <p id="msg" style="text-align:center;font-size:24px;font-weight:700;min-height:34px;margin:12px 0 0"></p></div>`;
+    const sv=$("#sv"); const NS="http://www.w3.org/2000/svg";
+    // reference points along each stroke
+    const ref=strokes.map(dpath=>{ const p=document.createElementNS(NS,"path"); p.setAttribute("d",dpath); sv.appendChild(p); const len=p.getTotalLength(); const pts=[]; for(let t=0;t<=len;t+=1.5){ const q=p.getPointAtLength(t); pts.push({x:q.x,y:q.y,t:t/len}); } p.remove(); return pts; });
+    $("#starts").innerHTML=ref.map((pts,i)=>`<circle cx="${pts[0].x}" cy="${pts[0].y}" r="5.5" fill="#22A55F" stroke="#1B1F3B" stroke-width="1.2"/><text x="${pts[0].x}" y="${pts[0].y+0.3}" font-size="6.5" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="middle">${i+1}</text>`).join("");
+    const cv=$("#cv"), tw=$("#tw"); let user=[], cur=null, penSeen=false;
+    function size(){ const r=tw.getBoundingClientRect(), dpr=window.devicePixelRatio||1; cv.width=r.width*dpr; cv.height=r.height*dpr; redraw(); }
+    function toV(e){ const r=cv.getBoundingClientRect(); return {x:(e.clientX-r.left)/r.width*120-10, y:(e.clientY-r.top)/r.height*130-15}; }
+    function redraw(){ const g=cv.getContext("2d"), r=cv.width/120; g.clearRect(0,0,cv.width,cv.height); g.lineCap="round"; g.lineJoin="round"; g.strokeStyle="#2E7CF6"; g.lineWidth=6*r;
+      user.forEach(s=>{ g.beginPath(); s.forEach((p,i)=>{ const X=(p.x+10)*r, Y=(p.y+15)*r; i?g.lineTo(X,Y):g.moveTo(X,Y); }); if(s.length===1){const X=(s[0].x+10)*r,Y=(s[0].y+15)*r; g.lineTo(X+.1,Y);} g.stroke(); }); }
+    cv.addEventListener("pointerdown",e=>{ if(e.pointerType==="pen") penSeen=true; if(penSeen&&e.pointerType==="touch") return; e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(err){} cur=[toV(e)]; user.push(cur); redraw(); });
+    cv.addEventListener("pointermove",e=>{ if(!cur) return; if(penSeen&&e.pointerType==="touch") return; let evs=e.getCoalescedEvents?e.getCoalescedEvents():[]; if(!evs.length) evs=[e]; evs.forEach(ev=>cur.push(toV(ev))); redraw(); });
+    const end=()=>{ cur=null; }; cv.addEventListener("pointerup",end); cv.addEventListener("pointercancel",end);
+    new ResizeObserver(size).observe(tw); size();
+    $("#clr").onclick=()=>{ user=[]; redraw(); $("#msg").textContent=""; };
+    $("#watch").onclick=()=>{ const an=$("#anim"); an.innerHTML=""; let delay=0; strokes.forEach(s=>{ const p=document.createElementNS(NS,"path"); p.setAttribute("d",s); p.setAttribute("fill","none"); p.setAttribute("stroke","#E63B2E"); p.setAttribute("stroke-width","6"); p.setAttribute("stroke-linecap","round"); an.appendChild(p); const len=p.getTotalLength(); p.style.strokeDasharray=len; p.style.strokeDashoffset=len; const dur=Math.max(.7,len/90); setTimeout(()=>{ p.style.transition=`stroke-dashoffset ${dur}s ease-in-out`; p.style.strokeDashoffset=0; },delay*1000+60); delay+=dur+.25; }); setTimeout(()=>an.innerHTML="",delay*1000+1200); say(fam.tip); };
+    $("#chk").onclick=()=>{ const all=user.flat(); if(all.length<8){ $("#msg").textContent="Have a go first! Start at the green dot."; say("Have a go first! Start at the green dot."); return; }
+      const flat=ref.flat(); const near=(p,arr,tol)=>arr.some(q=>(q.x-p.x)**2+(q.y-p.y)**2<=tol*tol);
+      const cov=flat.filter(q=>near(q,all,10)).length/flat.length; const acc=all.filter(p=>near(p,flat,13)).length/all.length;
+      const s0=ref[0][0], u0=user[0][0]; const startOk=Math.hypot(s0.x-u0.x,s0.y-u0.y)<=16;
+      let dirOk=true; const us=user[0], rs=ref[0]; if(us.length>6 && rs.length>6){ const ts=us.map(p=>{let b=0,bd=1e9; rs.forEach((q,i)=>{const dd=(q.x-p.x)**2+(q.y-p.y)**2; if(dd<bd){bd=dd;b=q.t;}}); return b;}); let up=0,dn=0; for(let i=1;i<ts.length;i++){ if(ts[i]>ts[i-1]+.004) up++; else if(ts[i]<ts[i-1]-.004) dn++; } dirOk = up>=dn; }
+      const sc=cov*.6+acc*.4; let stars = sc>=.85?3:sc>=.68?2:1; if(!startOk||!dirOk) stars=Math.min(stars,2);
+      best[ch]=Math.max(best[ch]||0,stars); prog.traces[ch]=Math.max(prog.traces[ch]||0,stars);
+      $("#ts").textContent="⭐".repeat(stars)+"☆".repeat(3-stars);
+      let m = stars===3?"SUPER! Perfect shape!":stars===2?"Great try!":"Good go! Try following the grey letter.";
+      if(!startOk) m+=" Remember: start at the green dot."; else if(!dirOk) m+=" Try going the way the red line goes.";
+      $("#msg").textContent=m; say(m); addStars(stars); save();
+      if(stars===3){ celebrate(false); setTimeout(()=>{li++;show();},1700); }
+      else { sfx.good(); const nx=document.createElement("button"); nx.className="btn white small"; nx.textContent="Next letter ▶"; nx.onclick=()=>{li++;show();}; $("#msg").appendChild(document.createElement("br")); $("#msg").appendChild(nx); }
+    };
+    setTimeout(()=>$("#watch").click(),400);
+  }
+  function finish(){ handStep("trace"); app.innerHTML=`<div class="panel gym"><span class="ic">✏️</span><h2>Letter training done!</h2><p style="font-size:30px;font-weight:700;margin:0">${letters.map(l=>`${l} ${"⭐".repeat(best[l]||0)}`).join("&nbsp;&nbsp;&nbsp;")}</p><div class="row"><button class="btn red" id="b">Back to training</button><button class="btn white small" id="a">Do them again</button></div></div>`; $("#b").onclick=()=>go("hand"); $("#a").onclick=()=>go("h_trace"); }
+  show(); };
+
+SCREENS.h_bd=function(){ const off=(dayNum()*3)%BD.length; const rounds=Array.from({length:8},(_,i)=>BD[(off+i)%BD.length]); let r=0, ok=0;
+  function show(){ if(r>=rounds.length){ handStep("bd"); app.innerHTML=`<div class="panel bd"><span class="pic">🛏️</span><h2 class="disp" style="font-size:44px">b and d champion!</h2><p style="font-size:26px;font-weight:700;margin:0">${ok} of ${rounds.length} first time</p><button class="btn red" id="b">Back to training</button></div>`; $("#b").onclick=()=>go("hand"); return; }
+    const [rest,pic,ans]=rounds[r]; let tries=0;
+    app.innerHTML=`<div class="panel bd"><p class="sub" style="margin:0">${r+1} of ${rounds.length}</p><span class="pic">${pic}</span><div class="word"><u>?</u>${esc(rest)}</div><div class="pick"><button data-l="b">b</button><button data-l="d">d</button></div>
+     <div class="speech" style="font-size:20px">Bed trick: make two thumbs up. Your left hand makes <b>b</b>, your right hand makes <b>d</b>. They make a bed!</div><button class="linkbtn" id="h">🔊 Hear the word</button></div>`;
+    const word=ans+rest; $("#h").onclick=()=>say(word); say(word);
+    app.querySelectorAll(".pick button").forEach(b=>b.onclick=()=>{ if(b.dataset.l===ans){ if(!tries){ok++; addStars(1);} $(".word u").textContent=ans; $(".word u").style.color="var(--green)"; celebrate(false); say(word); setTimeout(()=>{r++;show();},1300); } else { tries++; sfx.nearly(); b.style.background="#FFD1CC"; say("Nearly! Check with your bed hands."); } }); }
+  show(); };
+
+SCREENS.h_space=function(){ const pool=S.slice(0,Math.max(3,storiesRead()+1)).map(s=>s.write).reverse(); let r=0, rounds=pool.slice(0,3), ok=0;
+  function show(){ if(r>=rounds.length){ handStep("space"); app.innerHTML=`<div class="panel gym"><span class="ic">👆</span><h2>Space hero!</h2><p style="font-size:26px;font-weight:700;margin:0">${ok} of ${rounds.length} first time. Remember a finger space between words.</p><button class="btn red" id="b">Back to training</button></div>`; $("#b").onclick=()=>go("hand"); return; }
+    const sent=rounds[r]; const chars=sent.replace(/\s+/g,"").split(""); const spaceAfter=new Set(); let idx=0; for(let i=0;i<sent.length;i++){ if(sent[i]===" ") spaceAfter.add(idx-1); else idx++; }
+    const on=new Set(); let tries=0;
+    function draw(){ $("#sl").innerHTML=chars.map((c,i)=>`<span class="ch">${esc(c)}</span>${i<chars.length-1?`<button class="gap ${on.has(i)?"on":""}" data-i="${i}" aria-label="space"></button>`:""}`).join("");
+      app.querySelectorAll(".gap").forEach(g=>g.onclick=()=>{ const i=+g.dataset.i; on.has(i)?on.delete(i):on.add(i); sfx.tap(); draw(); }); }
+    app.innerHTML=`<div class="panel qcard"><p class="sub" style="margin:0">${r+1} of ${rounds.length}</p><h2>Oh no! The words are squashed!</h2><p style="font-size:22px;font-weight:700;margin:0">Tap between letters to add finger spaces.</p><div class="space-line" id="sl"></div><div class="row" style="justify-content:center"><button class="btn white small" id="h">🔊 Hear it</button><button class="btn green" id="c">Check ⭐</button></div></div>`;
+    draw(); $("#h").onclick=()=>say(sent); say(sent);
+    $("#c").onclick=()=>{ const right=[...spaceAfter].every(i=>on.has(i)) && [...on].every(i=>spaceAfter.has(i));
+      if(right){ if(!tries){ok++; addStars(2);} celebrate(false); say(sent); setTimeout(()=>{r++;show();},1400); }
+      else { tries++; sfx.nearly(); app.querySelectorAll(".gap").forEach(g=>{ const i=+g.dataset.i; if(on.has(i)&&!spaceAfter.has(i)) g.classList.add("bad"); if(!on.has(i)&&spaceAfter.has(i)&&tries>1) g.classList.add("miss"); }); say(tries>1?"The yellow gaps need a space.":"Nearly! Say it slowly and listen for each word."); } };
+  }
+  show(); };
+
+SCREENS.h_paper=function(kind){ kind=kind||"daily"; const ep=currentEp(); const sentence = kind==="daily" ? ep.write : "Bobby and Daisy play in the big barn.";
+  const key="w-"+TODAY()+"-"+kind; const existing=writing[key]; let file=null;
+  app.innerHTML=`<div class="grid"><div class="panel"><h2 class="title">${kind==="daily"?"Paper Mission":kind==="baseline"?"Day 1 Writing Test":"Day 30 Writing Test"}</h2>
+   <p class="sub">${kind==="daily"?"Copy this onto lined paper with your pencil.":"Write this sentence, then your name underneath."}</p>
+   <div class="copybox">${esc(sentence)}</div>
+   <div class="row" style="margin-top:12px"><button class="btn blue small" id="hear">🔊 Hear it</button></div></div>
+   <div class="tips"><div><b>🐊 Crocodile grip</b>Pinch, then rest on your middle finger.</div><div><b>🌱 Sit on the grass</b>Letters sit on the line.</div><div><b>👆 Finger spaces</b>A finger between each word.</div><div><b>🐢 Slow and steady</b>Neat beats fast.</div></div>
+   <div class="panel" id="ph"><h3 class="disp" style="font-size:32px">Done? Take a photo!</h3>
+    <p class="note">Hold the tablet straight above the paper, in good light.</p>
+    <div class="row"><label class="btn green" for="cam" style="display:inline-flex;align-items:center">📸 Take photo</label><input id="cam" type="file" accept="image/*" capture="environment" class="vh">
+    <button class="btn white small" id="nophoto">I wrote it (no photo)</button></div>
+    <div id="res" style="margin-top:14px"></div></div></div>`;
+  $("#hear").onclick=()=>say(sentence);
+  if(existing) showResult(existing);
+  $("#nophoto").onclick=()=>{ handStep("paper"); go("hand"); };
+  $("#cam").onchange=async e=>{ file=e.target.files[0]; if(!file) return; const url=URL.createObjectURL(file);
+    $("#res").innerHTML=`<img class="photo" src="${url}" alt="Bobby's writing"><p class="note" id="up"><span class="spin">⭐</span> Saving your photo…</p>`;
+    const doc={date:TODAY(),day:dayNum(),kind,sentence,assetId:"",localImg:"",score:null};
+    if(assets){ try{ const r=await assets.upload(file); doc.assetId=r.id; $("#up").textContent="Photo saved!"; }catch(err){ $("#up").textContent="Couldn't save the photo ("+(err&&err.code||"error")+"). The score still works."; } }
+    else { try{ await idbPut(key, await shrink(file)); doc.localImg=key; $("#up").textContent="Photo saved on this tablet!"; }catch(err){ $("#up").textContent="Couldn't save the photo on this tablet."; } }
+    writing[key]=doc; saveWriting(key); handStep("paper"); scoreIt(doc,file); };
+  function showResult(doc){ $("#res").innerHTML=photoTag(doc,"photo","Bobby's writing")+(doc.score?scoreHTML(doc.score):`<p class="note">Photo saved.${sample?" Take a new one to get a Super Score.":""}</p>`); hydrateImgs(); }
+  async function scoreIt(doc,f){ const box=document.createElement("div"); box.style.marginTop="14px"; $("#res").appendChild(box);
+    if(!sample){ celebrate(false,"GREAT WRITING!"); box.innerHTML=`<div class="speech">🦸 Super writing, Bobby! Show Mummy or Daddy.</div>`; say("Super writing, Bobby! Show Mummy or Daddy."); return; }
+    box.innerHTML=`<button class="btn red" id="sc">⭐ Get my Super Score</button>`;
+    $("#sc").onclick=async()=>{ box.innerHTML=`<p style="font-size:24px;font-weight:700"><span class="spin">⭐</span> Super Bobby's coach is looking…</p>`;
+      try{ const r=await sample.json(scorePrompt(doc.sentence,doc.kind),{images:f}); doc.score=r; writing[key]=doc; saveWriting(key); box.innerHTML=scoreHTML(r); celebrate(r.overall>=60,"SUPER SCORE!"); say((r.praise||"")+" "+(r.tip||"")); }
+      catch(err){ box.innerHTML=`<p class="note">The coach couldn't look just now (${esc(err&&err.code||"error")}). Your photo is saved, try the score again later.</p>`; } }; }
+};
+function scorePrompt(sentence,kind){ return `This photo shows handwriting by Bobby, a 6-year-old boy in Year 2 (UK) who finds handwriting hard. He was asked to copy: "${sentence}"${kind!=="daily"?" and then write his name":""}.
+Look closely at the writing in the photo and score each area from 1 (needs lots of help) to 5 (great for his age):
+- formation: are letters formed correctly and readable (not backwards)?
+- size: are letters a steady size (tall letters tall, small letters small)?
+- line: do letters sit on the line?
+- spacing: are there clear spaces between words, not squashed or spread out?
+- caps: are capital letters only where they should be (not mixed into words)?
+Also list any letters written backwards (e.g. b/d, s, j) in "reversed" (empty array if none).
+"overall" is 0-100 for a child of his age. Be fair but kind.
+"praise": one short happy sentence to Bobby (simple words, max 15 words, call him Bobby).
+"tip": one tiny tip for next time (simple words, max 12 words).
+"grownup": 1-2 plain factual sentences for his parents about what you see (including grip/pressure clues if visible, e.g. very dark heavy lines).
+If the photo shows no handwriting, give overall 0 and say so in grownup.
+Reply with only JSON like {"formation":3,"size":2,"line":3,"spacing":2,"caps":4,"reversed":["d"],"overall":55,"praise":"...","tip":"...","grownup":"..."}`; }
+const SCORE_ROWS=[["formation","Letter shapes"],["size","Letter size"],["line","Sitting on the line"],["spacing","Finger spaces"],["caps","Capitals in the right place"]];
+function scoreHTML(r){ const st=n=>{n=Math.max(0,Math.min(5,Math.round(+n||0))); return "⭐".repeat(n)+"☆".repeat(5-n);};
+  return `<div class="scorebox"><div class="row"><span class="bigscore">${Math.round(+r.overall||0)}</span><span style="font-family:var(--display);font-size:30px">SUPER SCORE</span></div>
+  ${SCORE_ROWS.map(([k,l])=>`<div class="scorerow"><span>${l}</span><span class="st">${st(r[k])}</span></div>`).join("")}
+  ${(r.reversed&&r.reversed.length)?`<div class="scorerow"><span>Backwards letters</span><span>${r.reversed.map(esc).join(", ")}</span></div>`:""}
+  <div class="speech">🦸 ${esc(r.praise||"")}<br>💡 ${esc(r.tip||"")}</div></div>`; }
+async function saveWriting(key){ lsSave(); if(!db) return; try{ await db.doc("writing/"+key).set(JSON.parse(JSON.stringify(writing[key]))); }catch(e){ toast("Couldn't save the writing record."); } }
+
+/* ---------------- TROPHIES ---------------- */
+SCREENS.trophies=function(){ const rw=settings.rewards||{}; const rows=[
+  ["ownbed","🦸","Brave nights on my own",count("ownbed"),rw.ownbed],
+  ["dry","☀️","Dry beds",count("dry"),rw.dry],
+  ["reading","📖","Stories read",storiesRead(),rw.reading]];
+  const traced=Object.keys(prog.traces||{}).length;
+  app.innerHTML=`<div class="grid"><div class="panel hero"><div class="big">${capeStar(count("ownbed"))}</div><div class="txt"><h2>My Trophies</h2><p>${prog.stars||0} stars collected · ${traced} letters trained</p></div></div>
+  ${rows.map(([f,ic,t,n,r])=>`<div class="panel trophy"><h3>${ic} ${t}: ${n} of 30</h3><div class="track">${Array.from({length:30},(_,i)=>`<i class="${i<n?"on":""}">${i<n?"★":i+1}</i>`).join("")}</div>${r?`<div class="reward">🎁 At 30: ${esc(r)}</div>`:""}</div>`).join("")}
+  </div>`; };
+
+/* ---------------- GROWN-UPS ---------------- */
+SCREENS.grown=function(){ const d=day(); const n=d.notes||{}; const ws=Object.entries(writing).sort((a,b)=>a[0]<b[0]?-1:1);
+  const base=ws.find(([k,w])=>w.kind==="baseline"), fin=[...ws].reverse().find(([k,w])=>w.kind==="final"), latest=[...ws].reverse().find(([k,w])=>w.score);
+  const NOTE=[["grip","Pencil grip",["Good","Awkward"]],["press","Pressure",["OK","Too hard","Too light"]],["tired","Hand got tired",["No","Yes"]],["mood","Happy to write?",["Yes","Reluctant","Refused"]]];
+  app.innerHTML=`<div class="grid gu">
+  <div class="panel"><h3>Grown-ups</h3><p class="note">${db?"Everything saves to your Claude account, so you can check progress from your phone too.":"Everything saves on this tablet. Don't clear Chrome's data or history for this site, or his progress will be lost."}</p>
+   <div class="two"><div>
+    <label for="sd">Day 1 was</label><input id="sd" type="date" value="${esc(settings.startDate)}">
+    <label for="r1">Prize at 30 brave nights on his own</label><input id="r1" type="text" value="${esc(settings.rewards.ownbed||"")}" placeholder="e.g. new Lego set">
+    <label for="r2">Prize at 30 dry beds</label><input id="r2" type="text" value="${esc(settings.rewards.dry||"")}">
+    <label for="r3">Prize at 30 stories</label><input id="r3" type="text" value="${esc(settings.rewards.reading||"")}">
+    <div class="row" style="margin-top:12px"><button class="btn green small" id="sv">Save</button></div></div>
+    <div>${assets?`<label>Bobby's photo (goes in his hero badge)</label><div class="row">${heroSVG(110)}<label class="btn white small" for="pf" style="display:inline-flex;align-items:center">📷 Choose photo</label><input id="pf" type="file" accept="image/*" class="vh"></div>`:`<div class="row">${heroSVG(110)}</div>`}
+     <label>Story lock</label><p class="note" style="margin:0 0 8px">One new story a day. Missed a night? Let him read one extra.</p><button class="btn white small" id="unl">Unlock one extra story${settings.unlock?` (${settings.unlock} waiting)`:""}</button></div></div></div>
+  <div class="panel"><h3>Read the stories yourself</h3><p class="note">Preview mode: no stars, nothing marked as read, Bobby's next night stays locked for him.</p>
+   <div class="grid shelf">${S.map(s=>`<button class="ep" data-pv="${s.n}"><b>Night ${s.n}</b><span>${esc(s.title)}</span></button>`).join("")}</div></div>
+  <div class="panel"><h3>Today's handwriting notes</h3><p class="note">A quick record of what you see, useful for school or an OT assessment.</p>
+   ${NOTE.map(([k,l,opts])=>`<label>${l}</label><div class="seg" data-k="${k}">${opts.map(o=>`<button class="${n[k]===o?"on":""}">${o}</button>`).join("")}</div>`).join("")}
+   <label for="nt">Anything else</label><textarea id="nt" rows="2">${esc(n.text||"")}</textarea></div>
+  <div class="panel"><h3>Writing tests: Day 1 vs Day 30</h3><p class="note">Same sentence both times so it's a fair comparison. Do the Day 1 test now, and the Day 30 test at the end.</p>
+   <div class="row"><button class="btn blue small" id="bt">${base?"Redo":"Do"} Day 1 test</button><button class="btn red small" id="ft">Day 30 test</button></div>
+   <div class="cmp" style="margin-top:14px">${cmpCol("Day 1",base)}${cmpCol("Day 30",fin)}</div>
+   ${base&&fin&&base[1].score&&fin[1].score?`<div class="speech" style="margin-top:14px">Super Score went from ${base[1].score.overall} to ${fin[1].score.overall} (${fin[1].score.overall-base[1].score.overall>=0?"+":""}${fin[1].score.overall-base[1].score.overall}).</div>`:""}
+   ${latest?`<p class="note" style="margin-top:12px">Latest coach note: ${esc(latest[1].score.grownup||"")}</p>`:""}</div>
+  <div class="panel"><h3>Super Score over 30 days</h3>${chartHTML(ws)}</div>
+  <div class="panel"><h3>All writing photos</h3><div class="gallery">${ws.filter(([k,w])=>w.assetId||w.localImg).map(([k,w])=>`<figure>${photoTag(w,"","Writing day "+w.day)}<figcaption>Day ${w.day} · ${w.kind==="daily"?"daily":w.kind==="baseline"?"Day 1 test":"Day 30 test"}${w.score?` · ${w.score.overall}`:""}</figcaption></figure>`).join("")||`<p class="note">No photos yet. They appear here after each Paper Mission.</p>`}</div></div>
+  </div>`;
+  $("#sv").onclick=()=>{ settings.startDate=$("#sd").value||settings.startDate; settings.rewards={ownbed:$("#r1").value.trim(),dry:$("#r2").value.trim(),reading:$("#r3").value.trim()}; save(); renderBar(); toast("Saved."); };
+  $("#unl").onclick=()=>{ settings.unlock=(settings.unlock||0)+1; save(); toast("One extra story unlocked."); go("grown"); };
+  hydrateImgs();
+  app.querySelectorAll("[data-pv]").forEach(b=>b.onclick=()=>go("read",{n:+b.dataset.pv,preview:true}));
+  $("#bt").onclick=()=>go("h_paper","baseline"); $("#ft").onclick=()=>go("h_paper","final");
+  app.querySelectorAll(".seg").forEach(sg=>sg.querySelectorAll("button").forEach(b=>b.onclick=()=>{ const dd=day(); dd.notes=dd.notes||{}; dd.notes[sg.dataset.k]=b.textContent; save(); sg.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); }));
+  $("#nt").onchange=e=>{ const dd=day(); dd.notes=dd.notes||{}; dd.notes.text=e.target.value; save(); };
+  $("#pf").onchange=async e=>{ const f=e.target.files[0]; if(!f) return; if(!assets){ toast("Photos need the Claude app view."); return; } try{ toast("Saving photo…"); const r=await assets.upload(f); settings.photoId=r.id; save(); renderBar(); go("grown"); toast("Hero badge updated!"); }catch(err){ toast("Couldn't save the photo ("+(err&&err.code||"error")+")."); } };
+};
+function cmpCol(label,entry){ if(!entry) return `<div><b class="disp" style="font-size:26px">${label}</b><p class="note">Not done yet.</p></div>`; const w=entry[1];
+  return `<div><b class="disp" style="font-size:26px">${label} · ${esc(w.date)}</b>${photoTag(w,"photo",label+" writing")}${w.score?scoreHTML(w.score):sample?`<p class="note">No score yet.</p>`:""}</div>`; }
+function photoTag(w,cls,alt){ if(w.assetId) return `<img class="${cls}" src="/_blob/${w.assetId}" alt="${esc(alt)}">`; if(w.localImg) return `<img class="${cls}" data-local="${esc(w.localImg)}" alt="${esc(alt)}">`; return ""; }
+function hydrateImgs(){ document.querySelectorAll("img[data-local]").forEach(async im=>{ try{ const b=await idbGet(im.dataset.local); if(b) im.src=URL.createObjectURL(b); }catch(e){} }); }
+/* photos kept on the tablet itself when there is no Claude account behind the page */
+function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open("superbobby",1); r.onupgradeneeded=()=>r.result.createObjectStore("photos"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbPut(k,v){ const d=await idb(); return new Promise((res,rej)=>{ const t=d.transaction("photos","readwrite"); t.objectStore("photos").put(v,k); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
+async function idbGet(k){ const d=await idb(); return new Promise((res,rej)=>{ const q=d.transaction("photos").objectStore("photos").get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+function shrink(file){ return new Promise(res=>{ const im=new Image(); im.onload=()=>{ const s=Math.min(1,1400/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*s); c.height=Math.round(im.height*s); c.getContext("2d").drawImage(im,0,0,c.width,c.height); c.toBlob(b=>res(b||file),"image/jpeg",.75); }; im.onerror=()=>res(file); im.src=URL.createObjectURL(file); }); }
+function chartHTML(ws){ const pts=ws.filter(([k,w])=>w.score&&typeof w.score.overall==="number").map(([k,w])=>({d:w.day,v:w.score.overall}));
+  if(pts.length<2) return `<p class="note">The line appears after two scored photos.</p>`;
+  const W=600,H=220,L=36,B=28,x=d=>L+(d-1)/29*(W-L-12),y=v=>H-B-(v/100)*(H-B-12);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Super Score by day">${[0,25,50,75,100].map(v=>`<line x1="${L}" x2="${W-12}" y1="${y(v)}" y2="${y(v)}" stroke="#E7E1D2"/><text x="${L-6}" y="${y(v)+5}" font-size="13" text-anchor="end" fill="#6B6F86">${v}</text>`).join("")}
+   ${[1,10,20,30].map(d=>`<text x="${x(d)}" y="${H-8}" font-size="13" text-anchor="middle" fill="#6B6F86">Day ${d}</text>`).join("")}
+   <polyline fill="none" stroke="#2E7CF6" stroke-width="4" stroke-linejoin="round" points="${pts.map(p=>x(p.d)+","+y(p.v)).join(" ")}"/>
+   ${pts.map((p,i)=>`<circle cx="${x(p.d)}" cy="${y(p.v)}" r="${i===pts.length-1?7:4.5}" fill="${i===pts.length-1?"#E63B2E":"#2E7CF6"}" stroke="#fff" stroke-width="2"/>`).join("")}</svg>`; }
+
+/* ---------------- boot ---------------- */
+lsLoad(); go("home");
+document.addEventListener("pointerdown",()=>ctx(),{once:true});
+(async function connect(){ if(!window.claude||!claude.use) return;
+  try{ db=await claude.use("db"); }catch(e){}
+  try{ assets=await claude.use("assets"); }catch(e){}
+  try{ sample=await claude.use("sample"); }catch(e){}
+  if(!db) return;
+  try{ const [p,s,w]=await Promise.all([db.doc("bobby/progress").get(),db.doc("bobby/settings").get(),db.collection("writing").get()]);
+    // the shared store is the truth: if it has been reset, this device's old copy is dropped too
+    prog = p.exists ? JSON.parse(JSON.stringify(Object.assign({days:{},stories:{},stars:0,traces:{}},p.data()))) : {days:{},stories:{},stars:0,traces:{}};
+    if(s.exists){ settings=Object.assign(settings,JSON.parse(JSON.stringify(s.data()))); settings.rewards=settings.rewards||{}; }
+    else { settings={startDate:TODAY(),rewards:{reading:"",dry:"",ownbed:""},photoId:"",readAloud:true,unlock:0}; await db.doc("bobby/settings").set(JSON.parse(JSON.stringify(settings))); }
+    w.docs.forEach(d=>{ writing[d.id]=JSON.parse(JSON.stringify(d.data())); });
+    lsSave(); if(screen==="home"||screen==="trophies"||screen==="grown") go(screen); else renderBar();
+  }catch(e){ toast("Working offline on this tablet for now."); }
+})();
+})();
+</script>
+
+</body></html>

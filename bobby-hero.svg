@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="400" height="400">
+<g stroke="#1B1F3B" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M34 200 Q30 150 66 142 L134 142 Q170 150 166 200Z" fill="#E63B2E"/>
+  <path d="M48 200 Q50 158 100 150 Q150 158 152 200Z" fill="#2E7CF6"/>
+  <path d="M66 142 L82 160 L100 150 L118 160 L134 142" fill="#E63B2E"/>
+  <rect x="88" y="136" width="24" height="18" fill="#F4C3A3" stroke="none"/>
+  <circle cx="100" cy="182" r="15" fill="#FFC83D"/>
+  <text x="100" y="190" font-family="Bangers, Impact, sans-serif" font-size="22" text-anchor="middle" fill="#E63B2E" stroke="none">B</text>
+  <ellipse cx="55" cy="100" rx="10" ry="14" fill="#F4C3A3"/>
+  <ellipse cx="145" cy="100" rx="10" ry="14" fill="#F4C3A3"/>
+  <ellipse cx="100" cy="94" rx="45" ry="51" fill="#F7CDB0"/>
+  <path d="M55 86 Q50 38 100 34 Q150 38 145 86 Q141 70 130 66 Q122 74 110 66 Q100 76 90 66 Q78 74 70 66 Q60 72 55 86Z" fill="#E9B949"/>
+  <path d="M70 50 l6 10 M88 42 l4 12 M106 41 l2 12 M124 46 l-2 12 M138 58 l-6 8" stroke="#C9922E" stroke-width="2.5" fill="none"/>
+  <path d="M72 82 Q82 77 92 81 M108 81 Q118 77 128 82" stroke="#B9843A" stroke-width="3" fill="none"/>
+  <ellipse cx="82" cy="96" rx="9" ry="8" fill="#fff" stroke-width="2.5"/>
+  <ellipse cx="118" cy="96" rx="9" ry="8" fill="#fff" stroke-width="2.5"/>
+  <circle cx="83" cy="97" r="5" fill="#3E7FD0" stroke="none"/><circle cx="117" cy="97" r="5" fill="#3E7FD0" stroke="none"/>
+  <circle cx="83" cy="97" r="2.4" fill="#1B1F3B" stroke="none"/><circle cx="117" cy="97" r="2.4" fill="#1B1F3B" stroke="none"/>
+  <circle cx="85" cy="95" r="1.4" fill="#fff" stroke="none"/><circle cx="119" cy="95" r="1.4" fill="#fff" stroke="none"/>
+  <path d="M98 102 Q96 110 101 111" stroke="#C98B6B" stroke-width="2.5" fill="none"/>
+  <circle cx="70" cy="114" r="7" fill="#F29C9C" opacity=".55" stroke="none"/><circle cx="130" cy="114" r="7" fill="#F29C9C" opacity=".55" stroke="none"/>
+  <path d="M77 116 Q100 142 123 116 Q100 124 77 116Z" fill="#7A2E2E" stroke-width="2.5"/>
+  <path d="M80 117.5 Q100 124 120 117.5 L118 122 Q100 128 82 122Z" fill="#fff" stroke="none"/>
+  <rect x="97.5" y="119" width="5" height="7" fill="#7A2E2E" stroke="none"/>
+</g>
+</svg>
